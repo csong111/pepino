@@ -7,45 +7,55 @@ import {
   AsyncStorage
 } from 'react-native';
 
+
 export default class AuthScreen extends React.Component {
   static navigationOptions = {
     header: null,
   };
 
   state = {
-    text: '',
     userEmail: '',
     userHash: ''
   };
 
-
-  handleSignUp = () => {
-    const {userEmail, userHash} = this.state;
+  /*TODO: Add error handling*/
+  authenticate = async (reqBody) => {
     const requestBody = {
       query: `
-        mutation {
-          createUser(userInput: {email: "${userEmail}", password: "${userHash}"}) {
-            _id
-            email
-          }
-        }
+        ${reqBody}
       `
     }
     
-   return fetch('http://10.11.90.212:8000/graphql', {
+   const response = await fetch('http://10.11.90.212:8000/graphql', {
       method: 'POST',
       body: JSON.stringify(requestBody),
       headers: {
         'Content-Type': 'application/json'
       }
-    }).then(res => res.json()).then(resJson => console.log(resJson));
-  }
+    })
 
-  handleSignIn = () => {
-
+    const json = await response.json();
+    const {data} = json;
   }
 
   render() {
+    const {userEmail, userHash} = this.state;
+    
+    const loginQuery = `query {
+      login(email: "${userEmail}", password: "${userHash}") {
+        userId
+        token
+        tokenExpiration
+      }
+    }`; 
+
+    const signUpQuery = `mutation {
+      createUser(userInput: {email: "${userEmail}", password: "${userHash}"}) {
+        _id
+        email
+      }
+    }`;
+
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center"  }}>
         <Text aria-label="Username">Username</Text>
@@ -63,8 +73,8 @@ export default class AuthScreen extends React.Component {
             this.setState({userHash: hash})
           }}
         />
-        <Button title="Sign In" onPress={this.handleSignIn} type="submit"></Button>
-        <Button title="Sign Up" onPress={this.handleSignUp} type="submit"></Button>
+        <Button title="Sign In" onPress={this.authenticate(loginQuery)}></Button>
+        <Button title="Sign Up" onPress={this.authenticate(signUpQuery)}></Button>
       </View>
     );
   }
