@@ -20,13 +20,15 @@ export default class AuthScreen extends React.Component {
 
   /*TODO: Add error handling*/
   authenticate = async (reqBody) => {
+    const {navigate} = this.props.navigation;
+
     const requestBody = {
       query: `
         ${reqBody}
       `
     }
     
-   const response = await fetch('http://10.11.90.212:8000/graphql', {
+   const response = await fetch('http://192.168.0.101:8000/graphql', {
       method: 'POST',
       body: JSON.stringify(requestBody),
       headers: {
@@ -36,6 +38,13 @@ export default class AuthScreen extends React.Component {
 
     const json = await response.json();
     const {data} = json;
+
+    console.log('hehehehee', data)
+
+    if (data.login.token) {
+      console.log('INSIDEHERE')
+      navigate('Home');
+    }
   }
 
   render() {
@@ -73,8 +82,8 @@ export default class AuthScreen extends React.Component {
             this.setState({userHash: hash})
           }}
         />
-        <Button title="Sign In" onPress={this.authenticate(loginQuery)}></Button>
-        <Button title="Sign Up" onPress={this.authenticate(signUpQuery)}></Button>
+        <Button title="Sign In" onPress={() => this.authenticate(loginQuery)}></Button>
+        <Button title="Sign Up" onPress={() => this.authenticate(signUpQuery)}></Button>
       </View>
     );
   }
